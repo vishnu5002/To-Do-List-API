@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto p-6 max-w-2xl">
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">To-Do List</h1>
+        
+        <!-- Form to add or update tasks -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Add/Update Task</h2>
+            <form id="taskForm" class="space-y-4">
+                <input type="hidden" id="taskId">
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-600">Title</label>
+                    <input type="text" id="title" required class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-600">Description</label>
+                    <textarea id="description" class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-600">Status</label>
+                    <select id="status" class="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <button type="submit" id="submitBtn" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Add Task</button>
+                <button type="button" id="cancelBtn" class="w-full bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 hidden">Cancel Update</button>
+            </form>
+        </div>
+
+        <!-- Task list -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Tasks</h2>
+            <table id="taskTable" class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Title</th>
+                        <th class="p-2">Description</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Created At</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="taskList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/tasks';
+        const taskForm = document.getElementById('taskForm');
+        const taskList = document.getElementById('taskList');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const titleInput = document.getElementById('title');
+        const descriptionInput = document.getElementById('description');
+        const statusInput = document.getElementById('status');
+        const taskIdInput = document.getElementById('taskId');
+
+        // Fetch and display all tasks
+        async function loadTasks() {
+            try {
+                const response = await fetch(API_URL);
+                const tasks = await response.json();
+                taskList.innerHTML = '';
+                tasks.forEach(task => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="p-2">${task.title}</td>
+                        <td class="p-2">${task.description || ''}</td>
+                        <td class="p-2">${task.status}</td>
+                        <td class="p-2">${new Date(task.created_at).toLocaleString()}</td>
+                        <td class="p-2">
+                            <button onclick="editTask(${task.id}, '${task.title}', '${task.description || ''}', '${task.status}')" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Edit</button>
+                            <button onclick="deleteTask(${task.id})" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Delete</button>
+                        </td>
+                    `;
+                    taskList.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                alert('Failed to load tasks.');
+            }
+        }
+
+        // Add or update task
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const taskId = taskIdInput.value;
+            const task = {
+                title: titleInput.value,
+                description: descriptionInput.value || null,
+                status: statusInput.value
+            };
+
+            try {
+                let response;
+                if (taskId) {
+                    // Update task
+                    response = await fetch(`${API_URL}/${taskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(task)
+                    });
+                } else {
+                    // Add new task
+                    response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(task)
+                    });
+                }
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Request failed');
+                }
+
+                resetForm();
+                loadTasks();
+            } catch (error) {
+                console.error('Error saving task:', error);
+                alert(`Failed to save task: ${error.message}`);
+            }
+        });
+
+        // Edit task (populate form)
+        window.editTask = (id, title, description, status) => {
+            taskIdInput.value = id;
+            titleInput.value = title;
+            descriptionInput.value = description;
+            statusInput.value = status;
+            submitBtn.textContent = 'Update Task';
+            submitBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+            submitBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+            cancelBtn.classList.remove('hidden');
+        };
+
+        // Delete task
+        window.deleteTask = async (id) => {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Request failed');
+                }
+                loadTasks();
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                alert(`Failed to delete task: ${error.message}`);
+            }
+        };
+
+        // Reset form
+        function resetForm() {
+            taskForm.reset();
+            taskIdInput.value = '';
+            submitBtn.textContent = 'Add Task';
+            submitBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+            submitBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            cancelBtn.classList.add('hidden');
+        }
+
+        // Cancel update
+        cancelBtn.addEventListener('click', resetForm);
+
+        // Load tasks on page load
+        loadTasks();
+    </script>
+</body>
+</html>
