@@ -1,146 +1,211 @@
-To-Do List API
-A simple, RESTful To-Do List API built with FastAPI and SQLite, accompanied by a user-friendly HTML frontend for managing tasks. This project demonstrates CRUD operations, data validation with Pydantic, and asynchronous API handling, with a clean interface for creating, viewing, updating, and deleting tasks.
-Features
+# 📝 To-Do List API
 
-RESTful API: Supports Create, Read, Update, and Delete (CRUD) operations for tasks.
-Endpoints:
-POST /tasks: Create a new task.
-GET /tasks: Retrieve all tasks.
-GET /tasks/{id}: Retrieve a specific task by ID.
-PUT /tasks/{id}: Update a task (partial updates supported).
-DELETE /tasks/{id}: Delete a task.
+A simple and clean **RESTful To-Do List API** built with **FastAPI** and **SQLite**, complemented by a user-friendly HTML frontend. This project demonstrates core CRUD functionality, asynchronous handling, Pydantic-based validation, and a Tailwind CSS-powered interface.
 
+---
 
+## 🚀 Features
 
+- **RESTful API** with full **CRUD** support:
+  - `POST /tasks` – Create a task
+  - `GET /tasks` – Retrieve all tasks
+  - `GET /tasks/{id}` – Retrieve a specific task
+  - `PUT /tasks/{id}` – Update a task
+  - `DELETE /tasks/{id}` – Delete a task
 
-Data Validation: Uses Pydantic models to validate task data (title, description, status).
-Persistent Storage: Stores tasks in a SQLite database with fields for id, title, description, status, and created_at.
-HTML Frontend: A single-page HTML interface with:
-A form to add or update tasks.
-A table to display tasks with title, description, status, and creation date.
-Buttons to edit or delete tasks, with a confirmation prompt for deletions.
-Responsive design using Tailwind CSS (via CDN).
+- **Data Validation**: Leveraging **Pydantic** to ensure valid task data (`title`, `description`, `status`)
 
+- **Persistent Storage**: Tasks stored in **SQLite** database (`tasks.db`) with fields:
+  - `id`, `title`, `description`, `status`, `created_at`
 
-Error Handling: Returns appropriate HTTP status codes (e.g., 404 for non-existent tasks) and displays user-friendly error messages in the frontend.
-Dynamic Updates: The task list refreshes automatically after adding, updating, or deleting tasks.
+- **HTML Frontend**:
+  - Single-page UI for managing tasks
+  - Form for creating and updating tasks
+  - Task table with **edit** and **delete** functionality
+  - Responsive design using **Tailwind CSS (CDN)**
 
-Project Structure
+- **Error Handling**:
+  - Returns appropriate HTTP status codes (e.g., `404` for not found)
+  - User-friendly error alerts in the UI
+
+- **Dynamic Updates**: Auto-refreshing task list after every operation
+
+---
+
+## 📁 Project Structure
+
+```
 todo-list-api/
-├── main.py         # FastAPI backend with SQLite integration
-├── index.html      # HTML frontend for task management
-└── tasks.db        # SQLite database (created automatically on first run)
+├── main.py         # FastAPI backend
+├── index.html      # Frontend interface
+└── tasks.db        # SQLite DB (auto-created)
+```
 
-Prerequisites
+---
 
-Python 3.8+: Required for running the FastAPI backend.
-Git: To clone the repository.
-Browser: To access the HTML frontend and Swagger UI.
-Optional: A local HTTP server (e.g., Python’s http.server) to serve the HTML file.
+## ⚙️ Prerequisites
 
-Installation
+- **Python 3.8+**
+- **Git** (to clone repo)
+- **Browser** (for UI and Swagger)
+- (Optional) Local HTTP server to serve `index.html`
 
-Clone the Repository:
-git clone https://github.com/your-username/todo-list-api.git
-cd todo-list-api
+---
 
+## 🧩 Installation
 
-Set Up a Virtual Environment (recommended):
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/vishnu5002/To-Do-List-API.git
+cd To-Do-List-API
+```
+
+### 2. Set Up Virtual Environment
+
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+```
 
+### 3. Install Dependencies
 
-Install Dependencies:Install the required Python packages for the FastAPI backend:
+```bash
 pip install fastapi uvicorn pydantic
+```
 
-Note: The HTML frontend uses Tailwind CSS via CDN, so no additional frontend dependencies are needed.
+Optional for CORS support:
 
-Optional - Enable CORS (if accessing index.html from a different origin):Install the fastapi[all] package to include CORS middleware:
+```bash
 pip install "fastapi[all]"
+```
 
-Update main.py to add CORS support (see CORS Setup below).
+---
 
+## ▶️ Running the Project
 
-Running the Project
+### 1. Start the Backend
 
-Start the FastAPI Backend:Run the FastAPI server using Uvicorn:
+```bash
 uvicorn main:app --reload
+```
 
-The API will be available at http://127.0.0.1:8000. The SQLite database (tasks.db) will be created automatically on first run.
+- API base URL: `http://127.0.0.1:8000`
+- Swagger docs: `http://127.0.0.1:8000/docs`
 
-Access the Frontend:
+### 2. Access the Frontend
 
-Option 1: Serve index.html Locally:Serve the HTML file using Python’s built-in HTTP server:python -m http.server 8080
+#### Option 1: Using HTTP Server
 
-Open http://localhost:8080/index.html in your browser.
-Option 2: Open Directly:Open index.html directly in a browser (e.g., double-click the file). Note: You may need CORS enabled (see below) if you encounter issues.
+```bash
+python -m http.server 8080
+```
 
+Visit: [http://localhost:8080/index.html](http://localhost:8080/index.html)
 
-Test the API (optional):Access the Swagger UI at http://127.0.0.1:8000/docs to test API endpoints interactively.
+#### Option 2: Open HTML Directly
 
+Double-click `index.html`  
+> ⚠️ May need CORS enabled if accessing from file://
 
-Using the Application
+---
 
-Add a Task: In the HTML interface, enter a title (required), description (optional), and status (Pending, In Progress, or Completed), then click "Add Task".
-View Tasks: Tasks are displayed in a table with their title, description, status, and creation date.
-Edit a Task: Click "Edit" on a task to populate the form, modify fields, and click "Update Task". Use "Cancel Update" to reset the form.
-Delete a Task: Click "Delete" on a task and confirm to remove it.
-Example API Request (via Swagger UI or tools like curl):curl -X POST "http://127.0.0.1:8000/tasks" -H "Content-Type: application/json" -d '{"title":"Buy groceries","description":"Milk, eggs","status":"pending"}'
+## 🌐 CORS Setup (Optional)
 
+To allow frontend access from other origins:
 
+1. Install:
+   ```bash
+   pip install "fastapi[all]"
+   ```
 
-CORS Setup (Optional)
-If you encounter CORS issues when accessing index.html (e.g., when opening directly or from a different port), enable CORS in the FastAPI backend:
+2. Add this to `main.py`:
 
-Install fastapi[all] (includes python-multipart and fastapi-cors):
-pip install "fastapi[all]"
+   ```python
+   from fastapi.middleware.cors import CORSMiddleware
 
+   app.add_middleware(
+       CORSMiddleware,
+       allow_origins=["*"],  # Replace with specific origin(s) in production
+       allow_credentials=True,
+       allow_methods=["*"],
+       allow_headers=["*"],
+   )
+   ```
 
-Update main.py to include CORS middleware. Add the following code near the top of main.py, after app = FastAPI(...):
-from fastapi.middleware.cors import CORSMiddleware
+3. Restart server:
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Restrict to specific origins in production (e.g., ["http://localhost:8080"])
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+   ```bash
+   uvicorn main:app --reload
+   ```
 
+---
 
-Restart the FastAPI server:
-uvicorn main:app --reload
+## 🔧 Using the Application
 
+- **Add Task**: Fill the form → Click **Add Task**
+- **Edit Task**: Click **Edit** → Modify → Click **Update Task**
+- **Cancel Edit**: Click **Cancel Update**
+- **Delete Task**: Click **Delete** → Confirm
+- **View Tasks**: Tasks are shown with title, description, status, and creation date
 
+---
 
-Dependencies
+## 🧪 Example API Request
 
-Python Packages:
-fastapi: For building the RESTful API.
-uvicorn: For running the FastAPI server.
-pydantic: For data validation and serialization.
-sqlite3: Built-in with Python, used for the database.
-Optional: fastapi[all] for CORS support.
+Using `curl`:
 
+```bash
+curl -X POST "http://127.0.0.1:8000/tasks" \
+     -H "Content-Type: application/json" \
+     -d '{"title":"Buy groceries", "description":"Milk, eggs", "status":"pending"}'
+```
 
-Frontend:
-Tailwind CSS (loaded via CDN, no installation required).
-No JavaScript frameworks; uses vanilla JavaScript with the Fetch API.
+---
 
+## 🧱 Dependencies
 
+### Python
 
-Install Python dependencies:
-pip install fastapi uvicorn pydantic
+- `fastapi` – Core API framework
+- `uvicorn` – ASGI server
+- `pydantic` – Data validation
+- `sqlite3` – Built-in DB for persistence
+- Optional: `fastapi[all]` – CORS & multipart support
 
-Future Improvements
+### Frontend
 
-Add user authentication to secure the API.
-Implement task filtering or sorting in the frontend.
-Add pagination for the task list.
-Use an async database library (e.g., databases or SQLAlchemy with async support) for better performance.
-Deploy the API to a cloud platform (e.g., Heroku, Render) and host the frontend on a static file server.
+- **Tailwind CSS** (via CDN)
+- **Vanilla JavaScript** (Fetch API)
 
-Contributing
-Contributions are welcome! Please fork the repository, create a new branch, and submit a pull request with your changes.
-Contact
-For questions or suggestions, open an issue on GitHub or contact vishnu5002.
+---
+
+## 🔮 Future Improvements
+
+- Add **user authentication**
+- Enable **task filtering & sorting**
+- Implement **pagination**
+- Use **async DB** (e.g., `databases`, `SQLAlchemy`)
+- Deploy to **Heroku**, **Render**, or other cloud services
+- Host frontend as static site (e.g., GitHub Pages)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+- Fork the repo
+- Create a branch
+- Submit a **pull request**
+
+---
+
+## 📬 Contact
+
+For issues or suggestions, open an issue on GitHub or reach out:
+
+**GitHub**: [@vishnu5002](https://github.com/vishnu5002)
